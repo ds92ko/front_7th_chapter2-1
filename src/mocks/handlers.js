@@ -1,5 +1,5 @@
+import items from "@/mocks/items.json";
 import { http, HttpResponse } from "msw";
-import items from "./items.json";
 
 const delay = async () => await new Promise((resolve) => setTimeout(resolve, 200));
 
