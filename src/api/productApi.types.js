@@ -39,7 +39,11 @@
  */
 
 /**
- * @typedef {Partial<Filters> & { page?: number, current?: number, limit?: number }} ProductsRequest
+ * @typedef {Object} ProductsRequestType
+ * @property {number} [page] - 현재 페이지
+ * @property {number} [current] - 현재 페이지
+ * @property {number} [limit] - 페이지당 아이템 수
+ * @typedef {Partial<Filters> & ProductsRequestType} ProductsRequest
  */
 
 /**
