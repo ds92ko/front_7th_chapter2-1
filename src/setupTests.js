@@ -1,4 +1,4 @@
-import { server } from '@/__tests__/mockServerHandler.js';
+import { server } from '@/__tests__/mockServerHandler';
 import { configure } from '@testing-library/dom';
 import '@testing-library/jest-dom';
 import { afterAll, beforeAll } from 'vitest';
