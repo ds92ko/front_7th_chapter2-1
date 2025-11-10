@@ -1,7 +1,7 @@
 import { getProduct, getProducts } from '@/api/productApi';
 import { Detail, Home, NotFound, Template } from '@/pages';
 
-const BASE_PATH = process.env.NODE_ENV === 'production' ? '/front_7th_chapter2-1' : '';
+const BASE_PATH = import.meta.env.PROD ? '/front_7th_chapter2-1' : '';
 
 const enableMocking = () =>
   import('@/mocks/browser.js').then(({ worker }) =>
