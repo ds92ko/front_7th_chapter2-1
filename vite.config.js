@@ -1,11 +1,21 @@
-import { fileURLToPath, URL } from 'url';
+import path from 'path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  base: '/front_7th_chapter2-1/',
+  base: process.env.NODE_ENV === 'production' ? '/front_7th_chapter2-1/' : '/',
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
     },
   },
   test: {

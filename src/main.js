@@ -1,24 +1,28 @@
 import { getProduct, getProducts } from '@/api/productApi';
 import { Detail, Home, NotFound, Template } from '@/pages';
 
+const BASE_PATH = process.env.NODE_ENV === 'production' ? '/front_7th_chapter2-1' : '';
+
 const enableMocking = () =>
-  import('./mocks/browser.js').then(({ worker }) =>
+  import('@/mocks/browser.js').then(({ worker }) =>
     worker.start({
+      serviceWorker: {
+        url: `${BASE_PATH}/mockServiceWorker.js`,
+      },
       onUnhandledRequest: 'bypass',
     })
   );
 
 const render = async () => {
   const $root = document.getElementById('root');
-
   // 홈페이지
-  if (location.pathname === '/') {
+  if (location.pathname === `${BASE_PATH}/`) {
     $root.innerHTML = Home({ loading: true });
     const data = await getProducts();
     $root.innerHTML = Home({ ...data, loading: false });
   }
   // 상품 상세 페이지
-  else if (location.pathname.startsWith('/products/')) {
+  else if (location.pathname.startsWith(`${BASE_PATH}/products/`)) {
     $root.innerHTML = Detail({ loading: true });
     const productId = location.pathname.split('/').pop();
 
@@ -32,7 +36,7 @@ const render = async () => {
     }
   }
   // 템플릿 페이지
-  else if (location.pathname === '/template') {
+  else if (location.pathname === `${BASE_PATH}/template`) {
     $root.innerHTML = Template();
   }
   // 404 페이지
