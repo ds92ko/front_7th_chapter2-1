@@ -13,7 +13,7 @@ import {
 } from '@/template';
 
 export const Template = () => {
-  return /* html */ `
+  return /* HTML */ `
     ${상품목록_레이아웃_로딩}
     <br />
     ${상품목록_레이아웃_로딩완료}

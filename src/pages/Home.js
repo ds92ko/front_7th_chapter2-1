@@ -15,7 +15,7 @@ import { Layout } from '@/pages/Layout';
  */
 export const Home = ({ filters, pagination, products, categories, loading }) => {
   return Layout({
-    children: /* html */ `
+    children: /* HTML */ `
       ${SearchForm({ filters, pagination, categories, loading })}
       ${ProductList({ products, loading })}
     `,
