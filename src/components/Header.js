@@ -1,5 +1,7 @@
+import { BASE_PATH } from '@/constants';
+
 const PageTitle = () => {
-  const isDetailPage = location.pathname.startsWith('/products/');
+  const isDetailPage = location.pathname.startsWith(`${BASE_PATH}/products/`);
 
   return isDetailPage
     ? /* html */ `
@@ -14,7 +16,7 @@ const PageTitle = () => {
     `
     : /* html */ `
       <h1 class="text-xl font-bold text-gray-900">
-        <a href="/" data-link="">쇼핑몰</a>
+        <a href="${BASE_PATH}/" data-link="">쇼핑몰</a>
       </h1>
     `;
 };

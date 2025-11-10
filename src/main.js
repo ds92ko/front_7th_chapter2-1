@@ -1,7 +1,6 @@
 import { getProduct, getProducts } from '@/api/productApi';
+import { BASE_PATH } from '@/constants';
 import { Detail, Home, NotFound, Template } from '@/pages';
-
-const BASE_PATH = import.meta.env.PROD ? '/front_7th_chapter2-1' : '';
 
 const enableMocking = () =>
   import('@/mocks/browser.js').then(({ worker }) =>
@@ -48,7 +47,7 @@ const render = async () => {
 function main() {
   const router = {
     push: (path) => {
-      history.pushState({}, '', path);
+      history.pushState({}, '', `${BASE_PATH}${path}`);
       render();
     },
   };
@@ -56,7 +55,7 @@ function main() {
   document.body.addEventListener('click', (e) => {
     if (e.target.closest('.product-card')) {
       const productId = e.target.closest('.product-card').dataset.productId;
-      router.push(`${BASE_PATH}/products/${productId}`);
+      router.push(`/products/${productId}`);
     }
   });
 
