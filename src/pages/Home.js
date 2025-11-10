@@ -8,14 +8,15 @@ import { Layout } from '@/pages/Layout';
  *  filters: Filters,
  *  pagination: Pagination,
  *  products: Array<BaseProduct>,
+ *  categories: Array<Category>,
  *  loading: boolean,
  * }} props
  * @returns {string}
  */
-export const Home = ({ filters, pagination, products, loading }) => {
+export const Home = ({ filters, pagination, products, categories, loading }) => {
   return Layout({
     children: /* html */ `
-      ${SearchForm({ filters, pagination, loading })}
+      ${SearchForm({ filters, pagination, categories, loading })}
       ${ProductList({ products, loading })}
     `,
   });

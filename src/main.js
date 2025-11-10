@@ -1,4 +1,4 @@
-import { getProduct, getProducts } from '@/api/productApi';
+import { getCategories, getProduct, getProducts } from '@/api/productApi';
 import { BASE_PATH } from '@/constants';
 import { Detail, Home, NotFound, Template } from '@/pages';
 
@@ -18,7 +18,8 @@ const render = async () => {
   if (location.pathname === `${BASE_PATH}/`) {
     $root.innerHTML = Home({ loading: true });
     const data = await getProducts();
-    $root.innerHTML = Home({ ...data, loading: false });
+    const categories = await getCategories();
+    $root.innerHTML = Home({ ...data, categories, loading: false });
   }
   // 상품 상세 페이지
   else if (location.pathname.startsWith(`${BASE_PATH}/products/`)) {
