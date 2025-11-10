@@ -56,7 +56,7 @@ function main() {
   document.body.addEventListener('click', (e) => {
     if (e.target.closest('.product-card')) {
       const productId = e.target.closest('.product-card').dataset.productId;
-      router.push(`/products/${productId}`);
+      router.push(`${BASE_PATH}/products/${productId}`);
     }
   });
 
