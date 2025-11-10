@@ -1,17 +1,18 @@
-import { fileURLToPath, URL } from "url";
-import { defineConfig } from "vitest/config";
+import { fileURLToPath, URL } from 'url';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  base: '/front_7th_chapter2-1/',
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   test: {
     globals: true,
-    environment: "jsdom",
-    setupFiles: "./src/setupTests.js",
-    exclude: ["**/e2e/**", "**/*.e2e.spec.js", "**/node_modules/**"],
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+    exclude: ['**/e2e/**', '**/*.e2e.spec.js', '**/node_modules/**'],
     poolOptions: {
       threads: {
         singleThread: true,
