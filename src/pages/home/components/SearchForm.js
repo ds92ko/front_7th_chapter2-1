@@ -21,8 +21,10 @@ export default class SearchForm extends Component {
   setup() {
     const params = new URLSearchParams(location.search);
 
+    // TODO: 로딩 상태 처리 필요
     this.state = {
       categories: null,
+      search: params.get('search') || '',
       category1: params.get('category1'),
       category2: params.get('category2'),
       limit: params.get('limit') || DEFAULT_LIMIT,
@@ -31,6 +33,7 @@ export default class SearchForm extends Component {
     this.fetchCategories();
   }
 
+  // TODO: API 에러 처리 필요
   async fetchCategories() {
     const data = await getCategories();
     const categories = Object.entries(data || {}).map(([name, children]) => ({
@@ -188,6 +191,19 @@ export default class SearchForm extends Component {
   }
 
   setEvent() {
+    this.addEvent('keydown', '#search-input', (e) => {
+      if (/** @type {KeyboardEvent} */ (e).key !== 'Enter') return;
+      const url = new URL(location.href);
+      const search = /** @type {HTMLInputElement} */ (e.target).value;
+
+      if (search) {
+        url.searchParams.set('search', search);
+      } else {
+        url.searchParams.delete('search');
+      }
+      history.replaceState({}, '', url.toString());
+      this.setState({ search });
+    });
     this.addEvent('click', '[data-breadcrumb="reset"]', () => {
       const url = new URL(location.href);
 

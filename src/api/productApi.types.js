@@ -26,12 +26,14 @@
  * @property {boolean} hasPrev - 이전 페이지 존재 여부
  */
 
+/** @typedef {"price_asc"|"price_desc"|"name_asc"|"name_desc"} SortType */
+
 /**
  * @typedef {Object} Filters
  * @property {string} search - 검색어
  * @property {string} category1 - 1차 카테고리
  * @property {string} category2 - 2차 카테고리
- * @property {"price_asc"|"price_desc"|"name_asc"|"name_desc"} sort - 정렬 기준
+ * @property {SortType} sort - 정렬 기준
  *   - "price_asc": 가격 낮은순
  *   - "price_desc": 가격 높은순
  *   - "name_asc": 이름순
