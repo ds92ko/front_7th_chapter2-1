@@ -160,16 +160,20 @@ export default class DetailPage extends Component {
   }
 
   mounted() {
-    const { category1, category2, rating } = this.state.product;
+    const { product } = this.state;
     const $breadcrumb = this.$target.querySelector('[data-slot="breadcrumb"]');
     const $starRating = this.$target.querySelector('[data-slot="star-rating"]');
     const $relatedProducts = this.$target.querySelector('[data-slot="related-products"]');
     const $productLoading = this.$target.querySelector('[data-slot="product-loading"]');
 
-    if ($breadcrumb) new Breadcrumb($breadcrumb, { category1, category2 });
-    if ($starRating) new StarRating($starRating, { rating });
-    if ($relatedProducts) new RelatedProducts($relatedProducts, { category1, category2 });
-    if ($productLoading) new ProductLoading($productLoading);
+    if (product) {
+      const { category1, category2, rating } = product;
+      new Breadcrumb($breadcrumb, { category1, category2 });
+      new StarRating($starRating, { rating });
+      new RelatedProducts($relatedProducts, { category1, category2 });
+    } else {
+      new ProductLoading($productLoading);
+    }
   }
 
   setEvent() {
