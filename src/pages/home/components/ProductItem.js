@@ -43,7 +43,7 @@ export default class ProductItem extends Component {
       if (/** @type {HTMLElement} */ (e.target).closest('.add-to-cart-btn')) return;
       const productId = /** @type {HTMLElement} */ (e.currentTarget).dataset.productId;
 
-      navigate(`/products/${productId}`);
+      navigate(`/product/${productId}`);
     });
     // TODO: 장바구니 담기 기능 구현 필요
     this.addEvent('click', '.add-to-cart-btn', (e) => {

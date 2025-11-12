@@ -10,7 +10,7 @@ let $root;
 
 const routes = [
   { path: '/', component: HomePage, layout: Layout },
-  { path: '/products/:id', component: DetailPage, layout: Layout },
+  { path: '/product/:id', component: DetailPage, layout: Layout },
   { path: '/template', component: TemplatePage, layout: null },
 ];
 
