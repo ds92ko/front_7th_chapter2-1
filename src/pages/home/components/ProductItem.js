@@ -1,5 +1,6 @@
 import Component from '@/core/component';
 import { navigate } from '@/core/router';
+import { addItem, cartStore } from '@/stores/cart';
 
 export default class ProductItem extends Component {
   template() {
@@ -45,10 +46,12 @@ export default class ProductItem extends Component {
 
       navigate(`/product/${productId}`);
     });
-    // TODO: 장바구니 담기 기능 구현 필요
     this.addEvent('click', '.add-to-cart-btn', (e) => {
       e.stopPropagation();
-      console.log('장바구니 담기 클릭됨', /** @type {HTMLElement} */ (e.target).dataset.productId);
+      const { title, image, lprice, productId } = this.props;
+
+      cartStore.dispatch(addItem({ title, image, lprice, productId, quantity: 1 }));
+      // TODO: 장바구니에 추가되었습니다 토스트 알림 추가 필요
     });
   }
 }

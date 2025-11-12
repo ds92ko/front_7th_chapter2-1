@@ -1,16 +1,10 @@
 import Component from '@/core/component';
+import { cartStore } from '@/stores/cart';
 import { modalStore, openModal } from '@/stores/modal';
 
 export default class CartButton extends Component {
-  // TODO: 실제 장바구니 수량은 스토어에서 관리하도록 수정 필요
-  setup() {
-    this.state = {
-      cartCount: 4,
-    };
-  }
-
   template() {
-    const { cartCount } = this.state;
+    const { items } = cartStore.getState();
 
     return /* HTML */ `
       <button
@@ -25,11 +19,12 @@ export default class CartButton extends Component {
             d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"
           ></path>
         </svg>
-        ${cartCount &&
-        /* HTML */ `<span
-          class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-          >${cartCount}</span
-        >`}
+        ${items.length
+          ? /* HTML */ `<span
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+              >${items.length}</span
+            >`
+          : ''}
       </button>
     `;
   }
