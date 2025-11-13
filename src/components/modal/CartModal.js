@@ -25,7 +25,7 @@ export default class CartModal extends Component {
     );
 
     return /* HTML */ `
-      <div class="fixed inset-0 z-50 overflow-y-auto cart-modal">
+      <div class="fixed inset-0 z-50 overflow-y-auto cart-modal" tabindex="-1">
         <!-- 배경 오버레이 -->
         <div
           class="fixed inset-0 bg-black bg-opacity-50 transition-opacity cart-modal-overlay"
@@ -275,7 +275,18 @@ export default class CartModal extends Component {
     `;
   }
 
+  mounted() {
+    const { open } = modalStore.getState();
+
+    if (!open) return;
+    const $modal = this.$target.querySelector('.cart-modal');
+    /** @type {HTMLElement} */ ($modal).focus();
+  }
+
   setEvent() {
+    this.addEvent('keydown', '.cart-modal', (e) => {
+      if (/** @type {KeyboardEvent} */ (e).key === 'Escape') modalStore.dispatch(closeModal());
+    });
     this.addEvent('click', '.cart-modal-overlay', () => modalStore.dispatch(closeModal()));
     this.addEvent('click', '#cart-modal-close-btn', () => modalStore.dispatch(closeModal()));
     this.addEvent('change', '.cart-item-checkbox', (e) => {
