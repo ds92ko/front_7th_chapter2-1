@@ -23,7 +23,7 @@ class EventDelegator {
   register(eventType, selector, component, callback) {
     if (!this._eventHandlers.has(eventType)) {
       this._eventHandlers.set(eventType, new Set());
-      // document에 각 이벤트 타입당 리스너를 한 번만 등록
+
       const handler = (event) => this._handleEvent(event);
       this._documentHandlers.set(eventType, handler);
       document.addEventListener(eventType, handler, true);
@@ -32,21 +32,20 @@ class EventDelegator {
     const binding = { selector, component, callback };
     this._eventHandlers.get(eventType).add(binding);
 
-    // 해제 함수 반환
     return () => {
       const handlers = this._eventHandlers.get(eventType);
-      if (handlers) {
-        handlers.delete(binding);
-        // 더 이상 핸들러가 없으면 document 리스너도 제거
-        if (handlers.size === 0) {
-          const handler = this._documentHandlers.get(eventType);
-          if (handler) {
-            document.removeEventListener(eventType, handler, true);
-            this._documentHandlers.delete(eventType);
-          }
-          this._eventHandlers.delete(eventType);
-        }
+
+      if (!handlers) return;
+      handlers.delete(binding);
+
+      if (!handlers.size) return;
+      const handler = this._documentHandlers.get(eventType);
+
+      if (handler) {
+        document.removeEventListener(eventType, handler, true);
+        this._documentHandlers.delete(eventType);
       }
+      this._eventHandlers.delete(eventType);
     };
   }
 
@@ -63,24 +62,16 @@ class EventDelegator {
 
     const target = /** @type {Element} */ (event.target);
 
-    // 등록된 모든 핸들러를 확인
     for (const { selector, component, callback } of handlers) {
-      // 컴포넌트의 현재 $target을 참조 (루트가 변경되어도 최신 값 사용)
       const $target = component.$target;
       if (!$target) continue;
 
-      // $target이 DOM에 없으면 스킵 (이벤트는 정리되지 않지만 실행되지 않음)
-      if (!document.body.contains($target) && $target !== document.body) {
-        continue;
-      }
+      if (!document.body.contains($target) && $target !== document.body) continue;
 
-      // 해당 컴포넌트의 $target 내부에 있는 요소인지 확인
       if ($target.contains(target)) {
-        // selector와 매칭되는지 확인
         const matchedElement = target.closest(selector);
-        if (matchedElement && $target.contains(matchedElement)) {
-          callback(event);
-        }
+
+        if (matchedElement && $target.contains(matchedElement)) callback(event);
       }
     }
   }
@@ -100,6 +91,7 @@ export default class Component {
   /** @type {ComponentProps} */ props;
   /** @type {ComponentState} */ state;
   /** @type {Array<() => void>} */ _eventUnsubscribers = [];
+  /** @type {Component[]} */ childComponents = [];
 
   /**
    * @constructor
@@ -111,8 +103,6 @@ export default class Component {
     this.props = props;
     this.setup();
 
-    // observe를 한 번만 등록하여 Store 구독
-    // Store가 변경되면 자동으로 render()가 호출됨
     observe(() => {
       this.render();
     });
@@ -138,8 +128,16 @@ export default class Component {
    * @method unmounted
    * @description 컴포넌트가 제거되기 전에 실행되는 훅(hook)입니다.
    * 하위 클래스에서 정리 로직을 정의할 수 있습니다.
+   * 기본적으로 childComponents를 자동으로 정리합니다.
    */
-  unmounted() {}
+  unmounted() {
+    if (this.childComponents && Array.isArray(this.childComponents)) {
+      this.childComponents.forEach((component) => {
+        if (component && typeof component.destroy === 'function') component.destroy();
+      });
+      this.childComponents = [];
+    }
+  }
 
   /**
    * @method template
@@ -220,8 +218,6 @@ export default class Component {
    * @param {(event: Event) => void} callback 이벤트 발생 시 실행할 콜백 함수
    */
   addEvent(eventType, selector, callback) {
-    // 전역 이벤트 위임자에 등록
-    // 컴포넌트 인스턴스를 전달하여 $target이 변경되어도 최신 값을 참조할 수 있도록 함
     const unsubscribe = eventDelegator.register(eventType, selector, this, callback);
     this._eventUnsubscribers.push(unsubscribe);
   }

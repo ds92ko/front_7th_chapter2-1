@@ -1,32 +1,19 @@
 import { getCategories } from '@/api/productApi';
+import { DEFAULT_LIMIT, DEFAULT_SORT, LIMIT_OPTIONS, SORT_OPTIONS } from '@/constants';
 import Component from '@/core/component';
-
-const DEFAULT_LIMIT = 20;
-const LIMIT_OPTIONS = [
-  { value: 10, label: '10개' },
-  { value: 20, label: '20개' },
-  { value: 50, label: '50개' },
-  { value: 100, label: '100개' },
-];
-const DEFAULT_SORT = 'price_asc';
-const SORT_OPTIONS = [
-  { value: 'price_asc', label: '가격 낮은순' },
-  { value: 'price_desc', label: '가격 높은순' },
-  { value: 'name_asc', label: '이름순' },
-  { value: 'name_desc', label: '이름 역순' },
-];
+import { getUrlParams, removeUrlParams, updateUrlParams } from '@/utils/urlParams';
 
 export default class SearchForm extends Component {
   setup() {
-    const params = new URLSearchParams(location.search);
+    const urlParams = getUrlParams();
 
     this.state = {
       categories: null,
-      search: params.get('search') || '',
-      category1: params.get('category1'),
-      category2: params.get('category2'),
-      limit: params.get('limit') ? Number(params.get('limit')) : DEFAULT_LIMIT,
-      sort: params.get('sort') || DEFAULT_SORT,
+      search: urlParams.search || '',
+      category1: urlParams.category1,
+      category2: urlParams.category2,
+      limit: urlParams.limit || DEFAULT_LIMIT,
+      sort: urlParams.sort || DEFAULT_SORT,
       loading: true,
       error: null,
     };
@@ -236,73 +223,54 @@ export default class SearchForm extends Component {
     const { onSearchParamsChange } = this.props;
     this.addEvent('keydown', '#search-input', (e) => {
       if (/** @type {KeyboardEvent} */ (e).key !== 'Enter') return;
-      const url = new URL(location.href);
       const search = /** @type {HTMLInputElement} */ (e.target).value;
 
-      if (search) {
-        url.searchParams.set('search', search);
-      } else {
-        url.searchParams.delete('search');
-      }
-      history.replaceState({}, '', url.toString());
+      updateUrlParams({ search });
       this.setState({ search });
       onSearchParamsChange();
     });
     this.addEvent('click', '[data-breadcrumb="reset"]', () => {
-      const url = new URL(location.href);
+      const params = new URLSearchParams(location.search);
+      if (!params.has('category1')) return;
 
-      if (!url.searchParams.has('category1')) return;
-
-      url.searchParams.delete('category1');
-      url.searchParams.delete('category2');
-      history.replaceState({}, '', url.toString());
+      removeUrlParams(['category1', 'category2']);
       this.setState({ category1: null, category2: null });
       onSearchParamsChange();
     });
     this.addEvent('click', '[data-breadcrumb="category1"]', () => {
-      const url = new URL(location.href);
+      const params = new URLSearchParams(location.search);
+      if (!params.has('category2')) return;
 
-      if (!url.searchParams.has('category2')) return;
-
-      url.searchParams.delete('category2');
-      history.replaceState({}, '', url.toString());
+      removeUrlParams(['category2']);
       this.setState({ category2: null });
       onSearchParamsChange();
     });
     this.addEvent('click', '.category1-filter-btn', ({ target }) => {
-      const url = new URL(location.href);
       const { category1 } = /** @type {HTMLElement} */ (target).dataset;
 
-      url.searchParams.set('category1', category1);
-      url.searchParams.delete('category2');
-      history.replaceState({}, '', url.toString());
+      updateUrlParams({ category1 });
+      removeUrlParams(['category2']);
       this.setState({ category1, category2: null });
       onSearchParamsChange();
     });
     this.addEvent('click', '.category2-filter-btn', ({ target }) => {
-      const url = new URL(location.href);
       const { category2 } = /** @type {HTMLElement} */ (target).dataset;
 
-      url.searchParams.set('category2', category2);
-      history.replaceState({}, '', url.toString());
+      updateUrlParams({ category2 });
       this.setState({ category2 });
       onSearchParamsChange();
     });
     this.addEvent('change', '#limit-select', ({ target }) => {
-      const url = new URL(location.href);
       const limit = Number(/** @type {HTMLSelectElement} */ (target).value);
 
-      url.searchParams.set('limit', limit.toString());
-      history.replaceState({}, '', url.toString());
+      updateUrlParams({ limit });
       this.setState({ limit });
       onSearchParamsChange();
     });
     this.addEvent('change', '#sort-select', ({ target }) => {
-      const url = new URL(location.href);
-      const sort = /** @type {HTMLSelectElement} */ (target).value;
+      const sort = /** @type {SortType} */ (/** @type {HTMLSelectElement} */ (target).value);
 
-      url.searchParams.set('sort', sort);
-      history.replaceState({}, '', url.toString());
+      updateUrlParams({ sort });
       this.setState({ sort });
       onSearchParamsChange();
     });

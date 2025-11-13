@@ -49,6 +49,7 @@ export class Router {
   /** @type {HTMLElement} */ $root;
   /** @type {Route[]} */ routes;
   /** @type {Route | null} */ currentRoute;
+  /** @type {Component | null} */ currentPageInstance;
 
   /**
    * @param {HTMLElement} root 라우터가 렌더링될 루트 엘리먼트
@@ -59,6 +60,7 @@ export class Router {
     this.$root = root;
     this.routes = routes;
     this.currentRoute = null;
+    this.currentPageInstance = null;
 
     window.addEventListener('popstate', () => this.render());
     document.addEventListener('click', this._handleLinkClick.bind(this), true);
@@ -71,7 +73,6 @@ export class Router {
    * @private
    */
   _handleLinkClick(event) {
-    console.log(event);
     const $link = /** @type {HTMLElement} */ (event.target).closest('a');
     if (!$link) return;
 
@@ -118,6 +119,11 @@ export class Router {
   render() {
     if (!this.$root) return;
 
+    if (this.currentPageInstance && typeof this.currentPageInstance.destroy === 'function') {
+      this.currentPageInstance.destroy();
+    }
+    this.currentPageInstance = null;
+
     const match = this._resolveRoute(location.pathname);
 
     this.$root.innerHTML = '';
@@ -125,7 +131,7 @@ export class Router {
     this.$root.appendChild($placeholder);
 
     if (!match) {
-      new Layout($placeholder, { children: NotFound });
+      this.currentPageInstance = new Layout($placeholder, { children: NotFound });
       return;
     }
 
@@ -133,9 +139,12 @@ export class Router {
     const { component: PageComponent, layout } = route;
 
     if (layout) {
-      new Layout($placeholder, { children: PageComponent, props: { params } });
+      this.currentPageInstance = new Layout($placeholder, {
+        children: PageComponent,
+        props: { params },
+      });
     } else {
-      new PageComponent($placeholder, { params });
+      this.currentPageInstance = new PageComponent($placeholder, { params });
     }
 
     this.currentRoute = route;

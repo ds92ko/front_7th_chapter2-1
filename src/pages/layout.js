@@ -26,10 +26,11 @@ export default class Layout extends Component {
     const $toast = this.$target.querySelector('[data-container="toast"]');
     const $main = this.$target.querySelector('[data-slot="main"]');
 
-    new Header($header, { isDetailPage: Boolean(props?.params.id) });
-    new Footer($footer);
-    new CartModal($cartModal);
-    new Toast($toast);
-    if (Children) new Children($main, props);
+    if ($header)
+      this.childComponents.push(new Header($header, { isDetailPage: Boolean(props?.params.id) }));
+    if ($footer) this.childComponents.push(new Footer($footer));
+    if ($cartModal) this.childComponents.push(new CartModal($cartModal));
+    if ($toast) this.childComponents.push(new Toast($toast));
+    if (Children && $main) this.childComponents.push(new Children($main, props));
   }
 }

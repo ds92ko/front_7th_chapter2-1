@@ -3,18 +3,19 @@ import Component from '@/core/component';
 import ProductItem from '@/pages/home/components/ProductItem';
 import ProductItemSkeleton from '@/pages/home/components/ProductItem.skeleton';
 import ProductListLoading from '@/pages/home/components/ProductList.loading';
+import { getUrlParams, removeUrlParams, updateUrlParams } from '@/utils/urlParams';
 
 const SKELETON_COUNT = 4;
 
 export default class ProductList extends Component {
   setup() {
-    const params = new URLSearchParams(location.search);
+    const urlParams = getUrlParams();
 
     this.state = {
       products: [],
       pagination: null,
       filters: null,
-      current: params.get('current') ? Number(params.get('current')) : 1,
+      current: urlParams.current || 1,
       loading: false,
       error: null,
     };
@@ -25,14 +26,13 @@ export default class ProductList extends Component {
   }
 
   getCurrentFilters() {
-    const params = new URLSearchParams(location.search);
-
+    const urlParams = getUrlParams();
     return {
-      limit: params.get('limit') ? Number(params.get('limit')) : undefined,
-      search: params.get('search') || undefined,
-      category1: params.get('category1') || undefined,
-      category2: params.get('category2') || undefined,
-      sort: /** @type {SortType} */ (params.get('sort')) || undefined,
+      limit: urlParams.limit,
+      search: urlParams.search,
+      category1: urlParams.category1,
+      category2: urlParams.category2,
+      sort: /** @type {SortType} */ (urlParams.sort),
     };
   }
 
@@ -43,9 +43,7 @@ export default class ProductList extends Component {
 
     if (shouldReset) {
       this.currentFilters = newFilters;
-      const url = new URL(location.href);
-      url.searchParams.delete('current');
-      history.replaceState({}, '', url.toString());
+      removeUrlParams(['current']);
       this.setState({
         products: [],
         pagination: null,
@@ -98,11 +96,9 @@ export default class ProductList extends Component {
           const { pagination, current, loading } = this.state;
           if (loading || !pagination?.hasNext) return;
 
-          const url = new URL(location.href);
           const nextPage = current + 1;
 
-          url.searchParams.set('current', nextPage.toString());
-          history.replaceState({}, '', url.toString());
+          updateUrlParams({ current: nextPage });
           this.setState({ current: nextPage });
           this.fetchProducts(false);
         }),

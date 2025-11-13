@@ -146,7 +146,7 @@ export default class DetailPage extends Component {
 
     if (loading) {
       const $productLoading = this.$target.querySelector('[data-slot="product-loading"]');
-      new ProductLoading($productLoading);
+      if ($productLoading) this.childComponents.push(new ProductLoading($productLoading));
       return;
     }
 
@@ -157,10 +157,15 @@ export default class DetailPage extends Component {
       const $productOptions = this.$target.querySelector('[data-slot="product-options"]');
       const $relatedProducts = this.$target.querySelector('[data-slot="related-products"]');
 
-      new Breadcrumb($breadcrumb, { category1, category2 });
-      new StarRating($starRating, { rating });
-      new ProductOptions($productOptions, { product });
-      new RelatedProducts($relatedProducts, { category1, category2, productId });
+      if ($breadcrumb)
+        this.childComponents.push(new Breadcrumb($breadcrumb, { category1, category2 }));
+      if ($starRating) this.childComponents.push(new StarRating($starRating, { rating }));
+      if ($productOptions)
+        this.childComponents.push(new ProductOptions($productOptions, { product }));
+      if ($relatedProducts)
+        this.childComponents.push(
+          new RelatedProducts($relatedProducts, { category1, category2, productId })
+        );
     }
   }
 
