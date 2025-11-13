@@ -5,6 +5,8 @@ import {
   decreaseQuantity,
   increaseQuantity,
   removeItem,
+  toggleAllItems,
+  toggleItemCheck,
 } from '@/stores/cart';
 import { closeModal, modalStore } from '@/stores/modal';
 
@@ -14,6 +16,14 @@ export default class CartModal extends Component {
     const { items } = cartStore.getState();
 
     if (!open) return '';
+
+    const checkedItems = items.filter((item) => item.checked);
+    const allChecked = items.length > 0 && items.every((item) => item.checked);
+    const selectedTotal = checkedItems.reduce(
+      (total, item) => total + item.lprice * item.quantity,
+      0
+    );
+
     return /* HTML */ `
       <div class="fixed inset-0 z-50 overflow-y-auto cart-modal">
         <!-- 배경 오버레이 -->
@@ -67,6 +77,7 @@ export default class CartModal extends Component {
                           type="checkbox"
                           id="cart-modal-select-all-checkbox"
                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
+                          ${allChecked ? 'checked' : ''}
                         />
                         전체선택 (${items.length}개)
                       </label>
@@ -87,6 +98,7 @@ export default class CartModal extends Component {
                                     type="checkbox"
                                     class="cart-item-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                     data-product-id="${item.productId}"
+                                    ${item.checked ? 'checked' : ''}
                                   />
                                 </label>
                                 <!-- 상품 이미지 -->
@@ -207,7 +219,17 @@ export default class CartModal extends Component {
               ? /* HTML */ `
                   <!-- 하단 액션 -->
                   <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
-                    <!-- 선택된 아이템 정보 -->
+                    ${checkedItems.length > 0
+                      ? /* HTML */ `
+                          <!-- 선택된 아이템 정보 -->
+                          <div class="flex justify-between items-center mb-3 text-sm">
+                            <span class="text-gray-600"
+                              >선택한 상품 (${checkedItems.length}개)</span
+                            >
+                            <span class="font-medium">${selectedTotal.toLocaleString()}원</span>
+                          </div>
+                        `
+                      : ''}
                     <!-- 총 금액 -->
                     <div class="flex justify-between items-center mb-4">
                       <span class="text-lg font-bold text-gray-900">총 금액</span>
@@ -219,6 +241,16 @@ export default class CartModal extends Component {
                     </div>
                     <!-- 액션 버튼들 -->
                     <div class="space-y-2">
+                      ${checkedItems.length > 0
+                        ? /* HTML */ `
+                            <button
+                              id="cart-modal-remove-selected-btn"
+                              class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-sm"
+                            >
+                              선택한 상품 삭제 (${checkedItems.length}개)
+                            </button>
+                          `
+                        : ''}
                       <div class="flex gap-2">
                         <button
                           id="cart-modal-clear-cart-btn"
@@ -246,6 +278,13 @@ export default class CartModal extends Component {
   setEvent() {
     this.addEvent('click', '.cart-modal-overlay', () => modalStore.dispatch(closeModal()));
     this.addEvent('click', '#cart-modal-close-btn', () => modalStore.dispatch(closeModal()));
+    this.addEvent('change', '.cart-item-checkbox', (e) => {
+      const { productId } = /** @type {HTMLElement} */ (e.target).dataset;
+      cartStore.dispatch(toggleItemCheck(productId));
+    });
+    this.addEvent('change', '#cart-modal-select-all-checkbox', () =>
+      cartStore.dispatch(toggleAllItems())
+    );
     this.addEvent('click', '.cart-item-remove-btn', (e) => {
       const { productId } = /** @type {HTMLElement} */ (e.target).dataset;
       cartStore.dispatch(removeItem(productId));
@@ -262,8 +301,12 @@ export default class CartModal extends Component {
 
       cartStore.dispatch(increaseQuantity(productId));
     });
-    this.addEvent('click', '#cart-modal-clear-cart-btn', () => {
-      cartStore.dispatch(clearCart());
+    this.addEvent('click', '#cart-modal-clear-cart-btn', () => cartStore.dispatch(clearCart()));
+    this.addEvent('click', '#cart-modal-remove-selected-btn', () => {
+      const { items } = cartStore.getState();
+      const checkedItems = items.filter((item) => item.checked);
+
+      checkedItems.forEach((item) => cartStore.dispatch(removeItem(item.productId)));
     });
     this.addEvent('click', '#cart-modal-checkout-btn', () => {
       console.log('구매 기능은 추후 구현 예정입니다 토스트 알림 추가 필요');

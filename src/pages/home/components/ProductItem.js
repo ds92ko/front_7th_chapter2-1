@@ -50,7 +50,7 @@ export default class ProductItem extends Component {
       e.stopPropagation();
       const { title, image, lprice, productId } = this.props;
 
-      cartStore.dispatch(addItem({ title, image, lprice, productId, quantity: 1 }));
+      cartStore.dispatch(addItem({ title, image, lprice, productId, quantity: 1, checked: false }));
       // TODO: 장바구니에 추가되었습니다 토스트 알림 추가 필요
     });
   }
