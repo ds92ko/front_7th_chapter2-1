@@ -45,7 +45,7 @@ export const cartStore = createPersistentStore(
           items: state.items.filter(({ productId }) => productId !== action.payload),
         };
       case CLEAR_CART:
-        return { ...initState };
+        return { items: [] };
       case INCREASE_QUANTITY:
         return {
           ...state,
