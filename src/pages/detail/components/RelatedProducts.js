@@ -58,8 +58,8 @@ export default class RelatedProducts extends Component {
   }
 
   setEvent() {
-    this.addEvent('click', '.related-product-card', (e) => {
-      const $card = /** @type {HTMLElement} */ (e.target).closest('.related-product-card');
+    this.addEvent('click', '.related-product-card', ({ target }) => {
+      const $card = /** @type {HTMLElement} */ (target).closest('.related-product-card');
       const { productId } = /** @type {HTMLElement} */ ($card).dataset;
 
       navigate(`/product/${productId}`);

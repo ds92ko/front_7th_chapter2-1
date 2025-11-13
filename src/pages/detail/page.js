@@ -174,8 +174,5 @@ export default class DetailPage extends Component {
     this.addEvent('click', '.go-to-product-list', () => {
       navigate('/');
     });
-    this.addEvent('click', '#retry-btn', () => {
-      this.fetchProduct();
-    });
   }
 }

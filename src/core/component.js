@@ -1,6 +1,95 @@
 import { observe } from '@/core/observer';
 
 /**
+ * @class EventDelegator
+ * @description
+ * document에 이벤트를 한 번만 등록하고 이벤트 위임으로 처리하는 전역 이벤트 매니저
+ * @private
+ */
+class EventDelegator {
+  /** @type {Map<string, Set<EventBinding>>} */
+  _eventHandlers = new Map();
+  /** @type {Map<string, (event: Event) => void>} */
+  _documentHandlers = new Map();
+
+  /**
+   * @method register
+   * @param {string} eventType 이벤트 타입
+   * @param {string} selector CSS 선택자
+   * @param {Component} component 컴포넌트 인스턴스
+   * @param {(event: Event) => void} callback 이벤트 핸들러
+   * @returns {() => void} 이벤트 해제 함수
+   */
+  register(eventType, selector, component, callback) {
+    if (!this._eventHandlers.has(eventType)) {
+      this._eventHandlers.set(eventType, new Set());
+      // document에 각 이벤트 타입당 리스너를 한 번만 등록
+      const handler = (event) => this._handleEvent(event);
+      this._documentHandlers.set(eventType, handler);
+      document.addEventListener(eventType, handler, true);
+    }
+
+    const binding = { selector, component, callback };
+    this._eventHandlers.get(eventType).add(binding);
+
+    // 해제 함수 반환
+    return () => {
+      const handlers = this._eventHandlers.get(eventType);
+      if (handlers) {
+        handlers.delete(binding);
+        // 더 이상 핸들러가 없으면 document 리스너도 제거
+        if (handlers.size === 0) {
+          const handler = this._documentHandlers.get(eventType);
+          if (handler) {
+            document.removeEventListener(eventType, handler, true);
+            this._documentHandlers.delete(eventType);
+          }
+          this._eventHandlers.delete(eventType);
+        }
+      }
+    };
+  }
+
+  /**
+   * @method _handleEvent
+   * @param {Event} event 발생한 이벤트
+   * @private
+   */
+  _handleEvent(event) {
+    const eventType = event.type;
+    const handlers = this._eventHandlers.get(eventType);
+
+    if (!handlers) return;
+
+    const target = /** @type {Element} */ (event.target);
+
+    // 등록된 모든 핸들러를 확인
+    for (const { selector, component, callback } of handlers) {
+      // 컴포넌트의 현재 $target을 참조 (루트가 변경되어도 최신 값 사용)
+      const $target = component.$target;
+      if (!$target) continue;
+
+      // $target이 DOM에 없으면 스킵 (이벤트는 정리되지 않지만 실행되지 않음)
+      if (!document.body.contains($target) && $target !== document.body) {
+        continue;
+      }
+
+      // 해당 컴포넌트의 $target 내부에 있는 요소인지 확인
+      if ($target.contains(target)) {
+        // selector와 매칭되는지 확인
+        const matchedElement = target.closest(selector);
+        if (matchedElement && $target.contains(matchedElement)) {
+          callback(event);
+        }
+      }
+    }
+  }
+}
+
+// 전역 이벤트 위임자 인스턴스
+const eventDelegator = new EventDelegator();
+
+/**
  * @class Component
  * @description
  * 컴포넌트 기반 UI 구조를 구현하기 위한 팩토리 클래스
@@ -10,7 +99,7 @@ export default class Component {
   /** @type {Element} */ $target;
   /** @type {ComponentProps} */ props;
   /** @type {ComponentState} */ state;
-  /** @type {EventBinding[]} */ _eventBindings = [];
+  /** @type {Array<() => void>} */ _eventUnsubscribers = [];
 
   /**
    * @constructor
@@ -44,6 +133,13 @@ export default class Component {
    * 하위 클래스에서 후처리 로직을 정의할 수 있습니다.
    */
   mounted() {}
+
+  /**
+   * @method unmounted
+   * @description 컴포넌트가 제거되기 전에 실행되는 훅(hook)입니다.
+   * 하위 클래스에서 정리 로직을 정의할 수 있습니다.
+   */
+  unmounted() {}
 
   /**
    * @method template
@@ -83,7 +179,6 @@ export default class Component {
       const newRoot = children[0];
       this.$target.replaceWith(newRoot);
       this.$target = /** @type {Element} */ (newRoot);
-      this._bindStoredEvents();
     } else {
       if (children.length > 1) {
         console.warn(
@@ -118,34 +213,38 @@ export default class Component {
   /**
    * @method addEvent
    * @description
-   * 이벤트 위임을 통해 하위 요소에 이벤트를 바인딩합니다.
+   * document에 이벤트를 위임하여 하위 요소에 이벤트를 바인딩합니다.
+   * document에 각 이벤트 타입당 리스너를 한 번만 등록하고, 이벤트 위임으로 처리합니다.
    * @param {string} eventType 이벤트 타입 (예: 'click', 'input' 등)
    * @param {string} selector 이벤트를 감지할 하위 요소의 CSS 선택자
    * @param {(event: Event) => void} callback 이벤트 발생 시 실행할 콜백 함수
    */
   addEvent(eventType, selector, callback) {
-    const handler = (event) => {
-      const target = /** @type {Element} */ (event.target);
-      if (target.closest(selector)) {
-        callback(event);
-      }
-    };
-
-    this._eventBindings.push({ eventType, handler });
-    this.$target.addEventListener(eventType, handler);
+    // 전역 이벤트 위임자에 등록
+    // 컴포넌트 인스턴스를 전달하여 $target이 변경되어도 최신 값을 참조할 수 있도록 함
+    const unsubscribe = eventDelegator.register(eventType, selector, this, callback);
+    this._eventUnsubscribers.push(unsubscribe);
   }
 
   /**
-   * @method _bindStoredEvents
+   * @method _cleanupEvents
    * @description
-   * `addEvent`로 등록된 이벤트 바인딩을 현재 루트 요소에 다시 연결합니다.
-   * 루트 요소가 교체되는 렌더링 시 자동으로 호출됩니다.
+   * 컴포넌트가 제거될 때 등록된 모든 이벤트를 해제합니다.
    * @private
    */
-  _bindStoredEvents() {
-    if (!this.$target) return;
-    this._eventBindings.forEach(({ eventType, handler }) => {
-      this.$target.addEventListener(eventType, handler);
-    });
+  _cleanupEvents() {
+    this._eventUnsubscribers.forEach((unsubscribe) => unsubscribe());
+    this._eventUnsubscribers = [];
+  }
+
+  /**
+   * @method destroy
+   * @description
+   * 컴포넌트를 제거하고 모든 리소스를 정리합니다.
+   * unmounted 훅을 호출하고 이벤트를 정리합니다.
+   */
+  destroy() {
+    this.unmounted();
+    this._cleanupEvents();
   }
 }

@@ -43,7 +43,8 @@ export default class ProductItem extends Component {
   setEvent() {
     this.addEvent('click', '.product-card', (e) => {
       if (/** @type {HTMLElement} */ (e.target).closest('.add-to-cart-btn')) return;
-      const productId = /** @type {HTMLElement} */ (e.currentTarget).dataset.productId;
+      const $productCard = /** @type {HTMLElement} */ (e.target).closest('.product-card');
+      const productId = /** @type {HTMLElement} */ ($productCard).dataset.productId;
 
       navigate(`/product/${productId}`);
     });

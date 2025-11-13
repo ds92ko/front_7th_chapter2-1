@@ -209,6 +209,8 @@ export default class SearchForm extends Component {
     this.addEvent('click', '[data-breadcrumb="reset"]', () => {
       const url = new URL(location.href);
 
+      if (!url.searchParams.has('category1')) return;
+
       url.searchParams.delete('category1');
       url.searchParams.delete('category2');
       history.replaceState({}, '', url.toString());
@@ -217,6 +219,8 @@ export default class SearchForm extends Component {
     });
     this.addEvent('click', '[data-breadcrumb="category1"]', () => {
       const url = new URL(location.href);
+
+      if (!url.searchParams.has('category2')) return;
 
       url.searchParams.delete('category2');
       history.replaceState({}, '', url.toString());
