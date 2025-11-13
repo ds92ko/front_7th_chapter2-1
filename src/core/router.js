@@ -1,9 +1,9 @@
 import { BASE_PATH } from '@/constants';
 import DetailPage from '@/pages/detail/page';
 import HomePage from '@/pages/home/page';
-import Layout from '@/pages/layout';
+import Layout from '@/pages/Layout';
 import NotFound from '@/pages/not-found';
-import TemplatePage from '@/pages/template';
+import TemplatePage from '@/pages/Template';
 
 // TODO: 라우터 정리!!
 let $root;
