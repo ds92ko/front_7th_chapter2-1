@@ -8,15 +8,14 @@ import { observe } from '@/core/observer';
  */
 export default class Component {
   /** @type {Element} */ $target;
-  /** @type {Record<string, any>} */ props;
-  /** @type {Record<string, any>} */ state;
-  /** @type {{ eventType: string, handler: (event: Event) => void }[]} */ _eventBindings = [];
+  /** @type {ComponentProps} */ props;
+  /** @type {ComponentState} */ state;
+  /** @type {EventBinding[]} */ _eventBindings = [];
 
   /**
    * @constructor
    * @param {Element} $target 렌더링 대상 DOM 요소
-   * @param {Record<string, any>} [props={}] 초기 속성
-   * @param {Record<string, any>} [props={}] 초기 속성
+   * @param {ComponentProps} [props={}] 초기 속성
    */
   constructor($target, props = {}) {
     this.$target = $target;
@@ -109,7 +108,7 @@ export default class Component {
    * @method setState
    * @description
    * 상태를 갱신하고 자동으로 다시 렌더링합니다.
-   * @param {Record<string, any>} newState 병합할 새로운 상태
+   * @param {Partial<ComponentState>} newState 병합할 새로운 상태
    */
   setState(newState) {
     this.state = { ...this.state, ...newState };
