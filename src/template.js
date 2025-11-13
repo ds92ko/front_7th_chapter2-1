@@ -1,12 +1,10 @@
-import { BASE_PATH } from '@/constants';
-
 export const 상품목록_레이아웃_로딩 = /* HTML */ `
   <div class="min-h-screen bg-gray-50">
     <header class="bg-white shadow-sm sticky top-0 z-40">
       <div class="max-w-md mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <h1 class="text-xl font-bold text-gray-900">
-            <a href="${BASE_PATH}/" data-link="">쇼핑몰</a>
+            <a href="/" data-link="">쇼핑몰</a>
           </h1>
           <div class="flex items-center space-x-2">
             <!-- 장바구니 아이콘 -->
@@ -195,7 +193,7 @@ export const 상품목록_레이아웃_로딩완료 = /* HTML */ `
       <div class="max-w-md mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <h1 class="text-xl font-bold text-gray-900">
-            <a href="${BASE_PATH}/" data-link="">쇼핑몰</a>
+            <a href="/" data-link="">쇼핑몰</a>
           </h1>
           <div class="flex items-center space-x-2">
             <!-- 장바구니 아이콘 -->
@@ -1380,7 +1378,7 @@ export const 상세페이지_로딩완료 = /* HTML */ `
       <!-- 브레드크럼 -->
       <nav class="mb-4">
         <div class="flex items-center space-x-2 text-sm text-gray-600">
-          <a href="${BASE_PATH}/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
+          <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
           <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -1645,7 +1643,7 @@ export const _404_ = /* HTML */ `
       </svg>
 
       <a
-        href="${BASE_PATH}/"
+        href="/"
         data-link
         class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
         >홈으로</a
