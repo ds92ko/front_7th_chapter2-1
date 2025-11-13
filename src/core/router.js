@@ -1,71 +1,121 @@
 import { BASE_PATH } from '@/constants';
-import DetailPage from '@/pages/detail/page';
-import HomePage from '@/pages/home/page';
 import Layout from '@/pages/layout';
 import NotFound from '@/pages/not-found';
-import TemplatePage from '@/pages/template';
 
-// TODO: 라우터 정리!!
-let $root;
+/**
+ * BASE_PATH를 제거한 경로를 반환
+ * @param {string} pathname 전체 경로
+ * @returns {string} BASE_PATH가 제거된 경로
+ */
+const stripBasePath = (pathname) => pathname.replace(new RegExp(`^${BASE_PATH}`), '') || '/';
 
-const routes = [
-  { path: '/', component: HomePage, layout: Layout },
-  { path: '/product/:id', component: DetailPage, layout: Layout },
-  { path: '/template', component: TemplatePage, layout: null },
-];
+/**
+ * 경로를 세그먼트 배열로 파싱
+ * @param {string} path 경로 문자열
+ * @returns {string[]} 세그먼트 배열
+ */
+const parsePathSegments = (path) => path.split('/').filter(Boolean);
 
-const findMatchedRoute = (pathname) => {
-  const path = pathname.replace(new RegExp(`^${BASE_PATH}`), '') || '/';
-  for (const route of routes) {
-    const routePathParts = route.path.split('/').filter(Boolean);
-    const currentPathParts = path.split('/').filter(Boolean);
-    if (routePathParts.length !== currentPathParts.length) continue;
-    const params = {};
-    const isMatch = routePathParts.every((part, i) => {
-      if (part.startsWith(':')) {
-        params[part.slice(1)] = currentPathParts[i];
-        return true;
-      }
-      return part === currentPathParts[i];
-    });
-    if (isMatch) return { route, params };
-  }
-  return null;
-};
+/**
+ * 라우트 패턴과 현재 경로를 매칭하고 파라미터를 추출
+ * @param {string} routePath 라우트 패턴 (예: '/product/:id')
+ * @param {string} currentPath 현재 경로 (예: '/product/123')
+ * @returns {Record<string, string> | null} 파라미터 객체 또는 null
+ */
+const matchPathPattern = (routePath, currentPath) => {
+  const routeSegments = parsePathSegments(routePath);
+  const pathSegments = parsePathSegments(currentPath);
 
-const render = () => {
-  if (!$root) return;
+  if (routeSegments.length !== pathSegments.length) return null;
 
-  const match = findMatchedRoute(location.pathname);
+  /** @type {Record<string, string>} */
+  const params = {};
 
-  $root.innerHTML = '';
-  const $placeholder = document.createElement('div');
-  $root.appendChild($placeholder);
+  for (let i = 0; i < routeSegments.length; i++) {
+    const routePart = routeSegments[i];
+    const pathPart = pathSegments[i];
 
-  if (!match) {
-    new Layout($placeholder, { children: NotFound });
-    return;
+    if (routePart.startsWith(':')) {
+      params[routePart.slice(1)] = pathPart;
+      continue;
+    }
+    if (routePart !== pathPart) return null;
   }
 
-  const { route, params } = match;
-  const { component: PageComponent, layout: LayoutComponent } = route;
-
-  LayoutComponent
-    ? new LayoutComponent($placeholder, { children: PageComponent, props: { params } })
-    : new PageComponent($placeholder, { params });
+  return params;
 };
 
-export const navigate = (path) => {
-  history.pushState({}, '', `${BASE_PATH}${path}`);
-  render();
-};
+export class Router {
+  /** @type {HTMLElement} */ $root;
+  /** @type {Route[]} */ routes;
+  /** @type {Route | null} */ currentRoute;
 
-export const initRouter = () => {
-  $root = document.getElementById('root');
-  if (!$root) {
-    console.error('Cannot find #root element to initialize router.');
-    return;
+  /**
+   * @param {HTMLElement} root 라우터가 렌더링될 루트 엘리먼트
+   * @param {Route[]} routes 라우트 정의 배열
+   */
+  constructor(root, routes) {
+    if (!root) throw new Error('Router requires a valid root element.');
+    this.$root = root;
+    this.routes = routes;
+    this.currentRoute = null;
+
+    window.addEventListener('popstate', () => this.render());
+    this.render();
   }
-  window.addEventListener('popstate', render);
-  render();
-};
+
+  /**
+   * 현재 pathname에 맞는 라우트를 찾음
+   * @param {string} pathname 현재 경로
+   * @returns {RouteMatch | null} 매칭된 라우트와 파라미터 또는 null
+   * @private
+   */
+  _resolveRoute(pathname) {
+    const path = stripBasePath(pathname);
+    for (const route of this.routes) {
+      const params = matchPathPattern(route.path, path);
+      if (params) return { route, params };
+    }
+    return null;
+  }
+
+  /**
+   * 현재 경로에 맞는 페이지를 렌더링
+   * @returns {void}
+   */
+  render() {
+    if (!this.$root) return;
+
+    const match = this._resolveRoute(location.pathname);
+
+    this.$root.innerHTML = '';
+    const $placeholder = document.createElement('div');
+    this.$root.appendChild($placeholder);
+
+    if (!match) {
+      new Layout($placeholder, { children: NotFound });
+      return;
+    }
+
+    const { route, params } = match;
+    const { component: PageComponent, layout } = route;
+
+    if (layout) {
+      new Layout($placeholder, { children: PageComponent, props: { params } });
+    } else {
+      new PageComponent($placeholder, { params });
+    }
+
+    this.currentRoute = route;
+  }
+
+  /**
+   * 페이지 이동 (history API 이용)
+   * @param {string} path 이동할 경로
+   * @returns {void}
+   */
+  navigate(path) {
+    history.pushState({}, '', `${BASE_PATH}${path}`);
+    this.render();
+  }
+}

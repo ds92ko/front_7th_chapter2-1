@@ -1,6 +1,5 @@
 import { getProducts } from '@/api/productApi';
 import Component from '@/core/component';
-import { navigate } from '@/core/router';
 
 export default class RelatedProducts extends Component {
   setup() {
@@ -62,7 +61,7 @@ export default class RelatedProducts extends Component {
       const $card = /** @type {HTMLElement} */ (target).closest('.related-product-card');
       const { productId } = /** @type {HTMLElement} */ ($card).dataset;
 
-      navigate(`/product/${productId}`);
+      router.navigate(`/product/${productId}`);
     });
   }
 }

@@ -1,6 +1,5 @@
 import { getProduct } from '@/api/productApi';
 import Component from '@/core/component';
-import { navigate } from '@/core/router';
 import Breadcrumb from '@/pages/detail/components/Breadcrumb';
 import ProductLoading from '@/pages/detail/components/Product.loading';
 import ProductOptions from '@/pages/detail/components/ProductOptions';
@@ -169,10 +168,10 @@ export default class DetailPage extends Component {
   setEvent() {
     this.addEvent('click', '#home-link', (e) => {
       e.preventDefault();
-      navigate('/');
+      router.navigate('/');
     });
     this.addEvent('click', '.go-to-product-list', () => {
-      navigate('/');
+      router.navigate('/');
     });
   }
 }

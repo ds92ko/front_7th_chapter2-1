@@ -1,5 +1,4 @@
 import Component from '@/core/component';
-import { navigate } from '@/core/router';
 
 export default class PageTitle extends Component {
   template() {
@@ -36,7 +35,7 @@ export default class PageTitle extends Component {
     });
     this.addEvent('click', '#home-link', (e) => {
       e.preventDefault();
-      navigate('/');
+      router.navigate('/');
     });
   }
 }

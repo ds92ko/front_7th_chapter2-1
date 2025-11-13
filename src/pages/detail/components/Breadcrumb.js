@@ -1,5 +1,4 @@
 import Component from '@/core/component';
-import { navigate } from '@/core/router';
 
 export default class Breadcrumb extends Component {
   template() {
@@ -36,17 +35,17 @@ export default class Breadcrumb extends Component {
   setEvent() {
     this.addEvent('click', '#home-link', (e) => {
       e.preventDefault();
-      navigate('/');
+      router.navigate('/');
     });
     this.addEvent('click', '.breadcrumb-link', ({ target }) => {
       const { category1, category2 } = this.props;
 
       if (/** @type {HTMLElement} */ (target).dataset.category1) {
-        navigate(`/?category1=${encodeURIComponent(category1)}`);
+        router.navigate(`/?category1=${encodeURIComponent(category1)}`);
         return;
       }
 
-      navigate(
+      router.navigate(
         `/?category1=${encodeURIComponent(category1)}&category2=${encodeURIComponent(category2)}`
       );
     });

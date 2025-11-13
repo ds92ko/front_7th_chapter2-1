@@ -1,5 +1,4 @@
 import Component from '@/core/component';
-import { navigate } from '@/core/router';
 
 export default class NotFound extends Component {
   template() {
@@ -82,7 +81,7 @@ export default class NotFound extends Component {
   setEvent() {
     this.addEvent('click', '#home-link', (e) => {
       e.preventDefault();
-      navigate('/');
+      router.navigate('/');
     });
   }
 }

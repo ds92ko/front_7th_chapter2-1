@@ -1,5 +1,8 @@
 import { BASE_PATH } from '@/constants';
-import { initRouter } from '@/core/router';
+import { Router } from '@/core/router';
+import DetailPage from '@/pages/detail/page';
+import HomePage from '@/pages/home/page';
+import TemplatePage from '@/pages/template';
 
 const enableMocking = () =>
   import('@/mocks/browser.js').then(({ worker }) =>
@@ -11,9 +14,15 @@ const enableMocking = () =>
     })
   );
 
-// TODO: 메인 정리!!
 function main() {
-  initRouter();
+  const routes = [
+    { path: '/', component: HomePage, layout: true },
+    { path: '/product/:id', component: DetailPage, layout: true },
+    { path: '/template', component: TemplatePage, layout: false },
+  ];
+  const $root = document.getElementById('root');
+
+  window.router = new Router($root, routes);
 }
 
 // Application Start

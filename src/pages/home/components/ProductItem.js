@@ -1,5 +1,4 @@
 import Component from '@/core/component';
-import { navigate } from '@/core/router';
 import { addItem, cartStore } from '@/stores/cart';
 import { openToast, toastStore } from '@/stores/toast';
 
@@ -46,7 +45,7 @@ export default class ProductItem extends Component {
       const $productCard = /** @type {HTMLElement} */ (e.target).closest('.product-card');
       const productId = /** @type {HTMLElement} */ ($productCard).dataset.productId;
 
-      navigate(`/product/${productId}`);
+      router.navigate(`/product/${productId}`);
     });
     this.addEvent('click', '.add-to-cart-btn', (e) => {
       e.stopPropagation();
